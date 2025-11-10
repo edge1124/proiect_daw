@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proiect DAW: Site-ul unei facultăți</title>
+    <style>
+        /* Stiluri de bază */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa; /* Fundal foarte deschis */
+            color: #343a40; /* Text închis la culoare */
+            line-height: 1.6;
+        }
+        .container {
+            width: 80%;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px 40px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+
+        /* Antet */
+        header {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #007bff; /* Linie de accent albastră */
+            margin-bottom: 25px;
+        }
+        header h1 {
+            color: #007bff; /* Albastru primar */
+            font-size: 2.2em;
+            margin: 0 0 5px 0;
+        }
+        header p {
+            color: #6c757d;
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        /* Titluri Secțiuni */
+        h2 {
+            color: #343a40;
+            font-size: 1.5em;
+            margin-top: 30px;
+            border-left: 5px solid #28a745; /* Linie verde de accent */
+            padding-left: 10px;
+        }
+        
+        /* Liste și conținut */
+        ul {
+            list-style-type: none; /* Elimină punctele standard */
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        ul li::before {
+            content: '•'; /* Folosește un bullet personalizat */
+            color: #007bff;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+        
+        /* Stil specific pentru Anunturi/Catalog */
+        .details-section {
+            background-color: #f1f7fe; /* Fundal ușor albăstrui */
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #dee2e6;
+        }
+        .details-section li::before {
+             content: '→';
+             color: #28a745; /* Săgeată verde */
+        }
+
+        /* Stil pentru tabele */
+        .tables-list li::before {
+            content: '✓';
+            color: #dc3545; /* Bifă roșie pentru tabele */
+        }
+        
+        /* Stil pentru fluxuri */
+        .flows-list {
+            list-style-type: decimal; /* Folosește numerotare */
+            padding-left: 20px;
+        }
+        .flows-list li {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .flows-list li::before {
+            content: none; /* Elimină bullet-ul personalizat */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <header>
+            <h1>Proiect DAW: Site-ul unei facultati</h1>
+            <p>Sindelaru Stefan-Cristian, 244</p>
+        </header>
+        
+        <section id="descriere">
+            <p>
+                Proiectul meu abordeaza site-ul unei facultatii, similar cu <b>carnet.unibuc.ro</b>, unde studentii isi vor putea verifica <b>notele, orarul</b>, sau sa contacteze profesori sau secretariatul, si profesorii pot posta <b>notele, anunturi</b> in legatura cu materia lor. 
+            </p>
+            <p>
+                Aplicatia se bazeaza pe interactiunea dintre <b>utilizatori, catalog si anunturi</b>.
+            </p>
+        </section>
+
+        <section id="utilizatori">
+            <h2>Utilizatorii:</h2>
+            <div class="details-section">
+                <ul>
+                    <li>Exista <b>3 tipuri de utilizatori</b>: studenti, profesori, si administratori</li>
+                    <li>administratorii inregistreaza conturile de tip student si profesor, cei din urma primind un e-mail unde le este "confirmat" contul si oferita sansa de a isi seta parola</li>
+		    <li>odata autentificat, utilizatorului ii este salvata sesiunea pentru o perioada de timp printr-un cookie, timp in care utilizatorul nu trebuie sa se mai autentifice din nou</li>                    
+		    <li>un student poate verifica <b>catalogul online</b>, unde isi va vedea orarul, notele, media, creditele si profesorii de la fiecare disciplina, ce difera de la serie la serie</li>
+                    <li>profesorii pot <b>modifica notele</b> studentilor, posta anunturi si verifica propriul orar.</li>
+                    <li>administratorii pot posta anunturi pe un tab propriu, deoarece vizeaza intreaga facultate; de asemenea, pot modifica conturile studentilor si a profesorilor odata ce incepe urmatorul an de facultate, schimband datele astfel incat unii profesori acum predau la alte serii, sau alte materii, iar studentilor le corespund astfel profesori diferiti. De asemenea, ei pot sterge, individual sau in masa, anunturile, pentru a reseta site-ul o data ce se schimba anul si anunturile vechi nu mai sunt relevante.</li>
+                    <li>orice utilizator, profesor sau student, poate trimite <b>mail unui administrator</b></li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="catalog">
+            <h2>Catalogul:</h2>
+            <div class="details-section">
+                <ul>
+                    <li>este modificat de <b>profesori</b>, si poate fi vazut de orice tip de utilizator</li>
+                    <li>un student isi poate vedea doar <b>propriile note</b>, un profesor poate vedea notele studentilor sai numai la <b>materia sa</b>, iar administratorul poate vedea <b>toate notele</b> tuturor studentilor</li>
+                    <li>calculeaza automat <b>creditele</b> la o anumita materie, si <b>media</b> unui student la toate materiile, verificand totodata daca studentul a trecut</li>
+                    <li>fiecare nota este asociata in baza de date materiei, studentului si profesorul. are relatie <b>one-to-many</b> cu tabela de profesori dar si cu tabela de studenti, fiecare student avand mai multe note la mai multe materii si fiecare profesor trimitand mai multe note fiecarui student.</li>
+                    <li>totusi, fiecare student poate avea doar <b>o singura nota</b> la o materie respectiva</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="anunturi">
+            <h2>Anunturile:</h2>
+            <div class="details-section">
+                <ul>
+                    <li>anunturile administrative sunt vizibile <b>tuturor utilizatorilor</b></li>
+                    <li>anunturile profesorilor sunt asociate unui curs, si numai studentii care participa la acel curs predat de acel profesor pot vedea aceste anunturi</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="tabele">
+            <h2>Tabele:</h2>
+		<img src = "tabele.png" style = "width: 100%">
+            <ul class="tables-list">
+                <li><b>studenti</b>, salveaza datele studentilor</li>
+                <li><b>profesori</b>, salveaza datele profesorilor</li>
+		<li><b>anunturi</b>, contine anunturile pentru materii sau generale si continutul lor</li>
+                <li><b>note</b>, salveaza notele fiecarui student la fiecare materie, servind de asemenea ca tabel asociativ intre profesori si studenti</li>
+                <li><b>preda_la</b>, tabel many-to-one pentru fiecare profesor, reprezentand ce materie preda profesorul fiecarei serii</li>
+                <li><b>orar</b>, salveaza orarul fiecarei grupe cu un link la o imagine</li>
+                <li><b>orar_profesor</b>, salveaza orarul fiecarui profesor tot cu un link la o imagine</li>
+		<li><b>login</b>, salveaza encriptat parola fiecarui utilizator, tipul de utilizator, id-ul de utilizator, mail-ul institutional si mail-ul personal</li>
+		<li><b>session</b>, memoreaza cookie-ul fiecarei sesiuni pentru un utilizator si elimina cookie-urile vechi pentru utilizatorul respectiv odata ce se adauga unul nou (incepe o sesiune noua)
+            </ul>
+        </section>
+        
+        <section id="fluxuri">
+            <h2>Fluxuri:</h2>
+            <ol class="flows-list">
+                <li>inregistrare</li>
+		<img src = "inregistrare.png" style = "width: 100%">
+                <li>autentificare</li>
+		<img src = "auth.png" style = "width: 100%">
+                <li>modificare nota</li>
+		<img src = "note.png" style = "width: 100%">
+                <li>postare anunturi</li>
+		<img src = "anunturi.png" style = "width: 100%">
+            </ol>
+        </section>
+
+    </div>
+
+</body>
+</html>
