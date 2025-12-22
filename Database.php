@@ -4,9 +4,9 @@ class Database {
     private PDO $connection;
 
     private string $host = "localhost";
-    private string $dbName = "proiect-daw";
-    private string $username = "root";
-    private string $password = "";
+    private string $dbName = "csindela_proiect-daw";
+    private string $username = "csindela_proiect-daw";
+    private string $password = "1w5S6[RV5tk;Gi";
 
     private array $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -36,7 +36,6 @@ class Database {
         }
         return self::$instance;
     }
-
 
     public function getConnection(): PDO {
         return $this->connection;

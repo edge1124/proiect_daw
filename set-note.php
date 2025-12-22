@@ -120,7 +120,7 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container-fluid">
-        <a class="navbar-brand" href="read-anunturi.php">Proiect Note</a>
+        <a class="navbar-brand" href="read-anunturi.php">Proiect Facultate</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -130,24 +130,29 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
               <a class="nav-link" href="read-anunturi.php">Anunțuri</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="set-note.php">Setare Note</a>
+              <a class="nav-link" href="read-note.php"<?php if(auth::$user_type !=1):?> hidden <?php endif?>>Notele Mele</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="create-anunt.php">Creează Anunț</a>
+              <a class="nav-link active" href="set-note.php" <?php if(auth::$user_type <2):?> hidden <?php endif?>>Setare Note</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="create-anunt.php"<?php if(auth::$user_type <2):?> hidden <?php endif?>>Creează Anunț</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="login-page.php">Login</a>
+              <a class="nav-link" href="logout.php">Log Out</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="create-user.php">Înregistrare (Admin)</a>
+              <a class="nav-link" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare</a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
-    
     <div class="container mt-5">
         <h2>Modificare si setare note</h2>
         
@@ -208,6 +213,7 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
 
                 <input type="hidden" name="materie" value="<?php echo htmlspecialchars($materie_select_id); ?>">
                 <input type="hidden" name="student" value="<?php echo htmlspecialchars($student_select_id); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo auth::$csrf_token; ?>">
                 
                 <button type="submit" name="action" value="save_grade" class="btn btn-success">Trimite nota</button>
             </form>

@@ -1,10 +1,9 @@
 <?php
 require_once 'auth.php';
-if(auth::$user_type < 3){
+$status = $_GET['status'] ?? '';
+if(auth::$user_type <= 1){
     header("Location: login-page.php");
 }
-
-$status = $_GET['status'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +13,7 @@ $status = $_GET['status'] ?? '';
     <title>Inregistrare Utilizator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-        /* Stiluri personalizate pentru a suprascrie sau ajusta Bootstrap */
+
         .message-box { 
             padding: 15px; 
             margin-top: 20px;
@@ -23,7 +22,7 @@ $status = $_GET['status'] ?? '';
             text-align: center; 
         }
         .conditional-fields { 
-            /* Folosim clase Bootstrap, dar păstrăm display: none inițial */
+
             display: none; 
             border: 1px dashed #c0e0c0; 
             background-color: #f7fff7; 
@@ -36,7 +35,7 @@ $status = $_GET['status'] ?? '';
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container-fluid">
-        <a class="navbar-brand" href="read-anunturi.php">Proiect Note</a>
+        <a class="navbar-brand" href="read-anunturi.php">Proiect Facultate</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -46,43 +45,49 @@ $status = $_GET['status'] ?? '';
               <a class="nav-link" href="read-anunturi.php">Anunțuri</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="set-note.php">Setare Note</a>
+              <a class="nav-link" href="read-note.php"<?php if(auth::$user_type !=1):?> hidden <?php endif?>>Notele Mele</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="create-anunt.php">Creează Anunț</a>
+              <a class="nav-link" href="set-note.php" <?php if(auth::$user_type <2):?> hidden <?php endif?>>Setare Note</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="create-anunt.php"<?php if(auth::$user_type <2):?> hidden <?php endif?>>Creează Anunț</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="login-page.php">Login</a>
+              <a class="nav-link" href="logout.php">Log Out</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="create-user.php">Înregistrare (Admin)</a>
+              <a class="nav-link active" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare</a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
-    
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
 
                 <?php
                 if ($status) {
-                    echo "<div class='message-box " . (strpos($status, 'success') !== false ? 'alert alert-success' : 'alert alert-danger') . "'>";
+                    echo "<div class='message-box " . (strpos(htmlspecialchars($status), 'success') !== false ? 'alert alert-success' : 'alert alert-danger') . "'>";
                     if ($status === "profesor_success" || $status === "student_success") {
-                        echo "<h3>✅ Utilizator înregistrat cu succes.</h3>";
+                        echo "<h3> Utilizator înregistrat cu succes.</h3>";
                     } elseif ($status === "db_error") {
-                        echo "<h3>❌ Eroare la înregistrare. Vă rugăm încercați din nou.</h3>";
+                        echo "<h3> Eroare la înregistrare. Vă rugăm încercați din nou.</h3>";
                     } else {
-                        echo "<h3>⚠️ Eroare necunoscută. Vă rugăm încercați mai târziu.</h3>";
+                        echo "<h3> Eroare necunoscută. Vă rugăm încercați mai târziu.</h3>";
                     }
                     echo "</div>";
                 }
                 ?>
 
                 <form action="register.php" method="POST" class="bg-white p-4 p-md-5 shadow rounded">
+                    <input type="hidden" name="csrf_token" value="<?php echo auth::$csrf_token; ?>">
                     <h2 class="mb-4">Inregistrare Utilizator</h2>
 
                     <div class="mb-3">
@@ -189,7 +194,7 @@ $status = $_GET['status'] ?? '';
 
             allFields.forEach(fieldDiv => {
                 fieldDiv.style.display = 'none';
-                // Elimină 'required' de pe câmpurile ascunse
+
                 const inputs = fieldDiv.querySelectorAll("input");
                 inputs.forEach(input => {
                     input.removeAttribute('required');
@@ -202,7 +207,7 @@ $status = $_GET['status'] ?? '';
 
                 if (targetDiv) {
                     targetDiv.style.display = 'block'; 
-                    // Adaugă 'required' pe câmpurile vizibile
+
                     const inputs = targetDiv.querySelectorAll("input");
                     inputs.forEach(input => {
                         input.setAttribute('required', 'required');
@@ -213,12 +218,11 @@ $status = $_GET['status'] ?? '';
 
         document.addEventListener('DOMContentLoaded', showHideFields);
         
-        // Asigură-te că funcția rulează și la refresh pentru a menține starea dacă există erori POST
-        // (Deși redirecționarea ta curentă șterge statusul, e o practică bună)
+
         document.addEventListener('DOMContentLoaded', () => {
              const status = new URLSearchParams(window.location.search).get('status');
              if (status) {
-                 // În funcție de status, poți readuce formularul vizibil
+
              }
              showHideFields();
         });

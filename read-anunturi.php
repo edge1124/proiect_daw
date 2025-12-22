@@ -1,4 +1,25 @@
 <!DOCTYPE html>
+<?php
+
+require_once 'Database.php';
+
+require_once 'auth.php';
+
+if(auth::$user_type == 0){
+    header("Location: login-page.php");
+    exit();
+}
+
+$pdo = Database::getInstance()->getConnection();
+
+if (isset($_POST['delete_id']) && auth::$user_type == 3) {
+    $delete_stmt = $pdo->prepare("DELETE FROM anunturi WHERE id_anunt = :id");
+    $delete_stmt->bindParam(':id', $_POST['delete_id']);
+    $delete_stmt->execute();
+    header("Location: read-anunturi.php");
+    exit();
+}
+?>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +30,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container-fluid">
-        <a class="navbar-brand" href="read-anunturi.php">Proiect Note</a>
+        <a class="navbar-brand" href="read-anunturi.php">Proiect Facultate</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -19,18 +40,24 @@
               <a class="nav-link active" href="read-anunturi.php">Anunțuri</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="set-note.php">Setare Note</a>
+              <a class="nav-link" href="read-note.php"<?php if(auth::$user_type !=1 ):?> hidden <?php endif?>>Notele Mele</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="create-anunt.php">Creează Anunț</a>
+              <a class="nav-link" href="set-note.php" <?php if(auth::$user_type <2):?> hidden <?php endif?>>Setare Note</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="create-anunt.php"<?php if(auth::$user_type <2):?> hidden <?php endif?>>Creează Anunț</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="login-page.php">Login</a>
+              <a class="nav-link" href="logout.php">Log Out</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="create-user.php">Înregistrare (Admin)</a>
+              <a class="nav-link" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare</a>
             </li>
           </ul>
         </div>
@@ -41,14 +68,8 @@
         <h1>Anunțuri Disponibile</h1>
 
 <?php
-require_once 'Database.php';
-require_once 'auth.php';
-if(auth::$user_type == 0){
-    header("Location: login-page.php");
-}
 try {
-    $pdo = Database::getInstance()->getConnection();
-    $sql = "SELECT * FROM anunturi";
+    $sql = "SELECT * FROM anunturi ORDER BY time_added DESC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     $record = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -57,8 +78,12 @@ try {
             <thead class='table-dark'>
                 <tr>
                     <th>Titlu</th>
-                    <th>Continut</th>
-                </tr>
+                    <th>Continut</th>";
+
+    if(auth::$user_type == 3) {
+        echo "<th></th>";
+    }
+    echo "</tr>
             </thead>
             <tbody>";
 
@@ -84,7 +109,7 @@ try {
         
         $show_anunt = false;
 
-        if($anunt['materie_id'] == "admin" || auth::$user_type == 3 || (auth::$user_type == 2 && auth::$username == $prof_username) || (auth::$user_type == 1 && $grupa == $student_grupa)){
+        if($anunt['materie_id'] == "admin" || $anunt['profesor_id'] == "admin" || auth::$user_type == 3 || (auth::$user_type == 2 && auth::$username == $prof_username) || (auth::$user_type == 1 && $grupa == $student_grupa)){
             $show_anunt = true;
         }
 
@@ -93,8 +118,18 @@ try {
             $content = $anunt['continut'];  
             echo "<tr>
                     <td>" . htmlspecialchars($titlu) . "</td>
-                    <td>" . nl2br(htmlspecialchars($content)) . "</td>
-                  </tr>";
+                    <td>" . nl2br(htmlspecialchars($content)) . "</td>";
+            
+            if(auth::$user_type == 3) {
+                echo "<td>
+                        <form method='POST' onsubmit='return confirm(\"Sigur doriți să ștergeți acest anunț?\");'>
+                            <input type='hidden' name='csrf_token' value='" . auth::$csrf_token . "'>
+                            <input type='hidden' name='delete_id' value='" . htmlspecialchars($anunt['id_anunt']) . "'>
+                            <button type='submit' class='btn btn-danger btn-sm'>Șterge</button>
+                        </form>
+                      </td>";
+            }
+            echo "</tr>";
         }
     }
     echo "</tbody></table>"; 
@@ -103,7 +138,6 @@ try {
 catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
-
 ?>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

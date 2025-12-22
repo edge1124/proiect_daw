@@ -5,24 +5,15 @@ if(auth::$user_type <= 1){
     header("Location: login-page.php");
 }
 $pdo = null;
-$materii = [];
 try {
     $pdo = Database::getInstance()->getConnection();
 } catch (PDOException $e){
     die("Eroare de conexiune: " . $e->getMessage());
 }
-$sql_prof = "SELECT id_profesor FROM profesor WHERE username = :username";
+$sql_prof = "SELECT id_profesor, nume, prenume FROM profesor";
 $stmt_prof = $pdo->prepare($sql_prof);
-$stmt_prof->bindParam(':username', auth::$username, PDO::PARAM_STR);
 $stmt_prof->execute();
-$profesor = $stmt_prof->fetchColumn(); 
-if (auth::$user_type == 3){
-    $profesor = 'admin';
-}
-$materii_getall = $pdo->prepare("SELECT DISTINCT id_materie, nume_materie FROM materie WHERE (id_profesor = :pid OR :pid = 'admin')");
-$materii_getall->bindParam(':pid', $profesor, PDO::PARAM_STR);
-$materii_getall->execute();
-$materii = $materii_getall->fetchAll(PDO::FETCH_ASSOC);
+$profesori = $stmt_prof->fetchAll(PDO::FETCH_ASSOC); 
 
 ?>
 <!DOCTYPE html>
@@ -31,7 +22,7 @@ $materii = $materii_getall->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postat Anunturi</title>
+    <title>Asociat Profesori</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
@@ -55,10 +46,10 @@ $materii = $materii_getall->fetchAll(PDO::FETCH_ASSOC);
               <a class="nav-link" href="set-note.php" <?php if(auth::$user_type <2):?> hidden <?php endif?>>Setare Note</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="create-anunt.php"<?php if(auth::$user_type <2):?> hidden <?php endif?>>Creează Anunț</a>
+              <a class="nav-link" href="create-anunt.php"<?php if(auth::$user_type <2):?> hidden <?php endif?>>Creează Anunț</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
+              <a class="nav-link active" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
           </ul>
           <ul class="navbar-nav">
@@ -73,43 +64,45 @@ $materii = $materii_getall->fetchAll(PDO::FETCH_ASSOC);
       </div>
     </nav>
     <div class="container mt-5">
-        <h1 class="mb-4">Postare Anunturi</h1>
-        <form action="create-anunt.php" method="POST">
+        <h1 class="mb-4">Asociat Porfesor-Materie</h1>
+        <form action="asociat-profesori.php" method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo auth::$csrf_token; ?>">
             <div class="mb-3">
-                <label for="title" class="form-label">Titlu</label>
-                <input type="text" class="form-control" id="title" name="title" required>
-            </div>
-            <div class="mb-3">
-                <label for="content" class="form-label">Continut</label>
-                <input type="text" class="form-control" id="content" name="content" required>
+                <label for="profesor" class="form-label">Profesor</label>
+                <select name="profesor" id="profesor" class="form-control" required>
+                    <option value="" disabled selected>-- Alegeti Profesor--</option>
+                    <?php foreach ($profesori as $profesor): 
+                        $id = htmlspecialchars($profesor['id_profesor']);
+                        $nume = htmlspecialchars($profesor['nume']); 
+                        $prenume = htmlspecialchars($profesor['prenume']); 
+                    ?>
+                        <option value="<?php echo $id; ?>">
+                            <?php echo $nume . " " . $prenume;?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="mb-3">
                 <label for="materie" class="form-label">Materie:</label>
                 <select name="materie" id="materie" class="form-control" required>
                     <option value="" disabled selected>-- Alegeti Materia--</option>
-                    <?php foreach ($materii as $materie): 
-                        $id = htmlspecialchars($materie['id_materie']);
-                        $nume = htmlspecialchars($materie['nume_materie']); 
-                    ?>
-                        <option value="<?php echo $id; ?>">
-                            <?php echo $nume;?>
-                        </option>
-                    <?php endforeach; ?>
-                    <?php if($profesor == 'admin'): ?>
-                        <option value="admin">
-                            Administrativ
-                        </option>
-                    <?php endif; ?>
+                    <option value="M1">Materie 1</option>
+                    <option value="M2">Materie 2</option>
+                    <option value="M3">Materie 3</option>
+                    <option value="M4">Materie 4</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Postat Anunt</button>
+            <div class="mb-3">
+                <label for="grupa" class="form-label">Grupa</label>
+                <input type="number" class="form-control" id="grupa" name="grupa" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Creați Asociere</button>
         </form>
     </div>
 
 <?php
 
-if (isset($_POST['title']) || isset($_POST['content']) || isset($_POST['materie'])) {
+if (isset($_POST['profesor']) || isset($_POST['grupa']) || isset($_POST['materie'])) {
 
 try {
     $pdo = Database::getInstance()->getConnection();
@@ -118,25 +111,40 @@ try {
 }
 
 try {
-    $sql = "INSERT INTO anunturi (titlu, continut, profesor_id, materie_id, time_added) 
-            VALUES (:title, :continut, :profesor_id, :materie_id, :time)";
+    $sql = "INSERT INTO materie (id_profesor, id_materie, nume_materie, grupa) 
+            VALUES (:id_prof, :id_materie, :nume_materie, :grupa)";
     
     $stmt = $pdo->prepare($sql);
+    $nume_mat = "";
+    switch ($_POST['materie']) {
+    case 'M1':
+        $nume_mat = "Materie 1";
+        break;
+    case 'M2':
+        $nume_mat = "Materie 2";
+        break;
+    case 'M3':
+        $nume_mat = "Materie 3";
+        break;
+    case 'M4':
+        $nume_mat = "Materie 4";
+        break;
+    }   
 
     $data = [
-        'title' => $_POST['title'] ?? 'Sample Title',
-        'continut' => $_POST['content'] ?? 'Sample Description',
-        'profesor_id' => $profesor,
-        'materie_id' => $_POST['materie'],
-        'time' => time()
+        'id_prof' => $_POST['profesor'],
+        'id_materie' => $_POST['materie'],
+        'nume_materie' => $nume_mat,
+        'grupa' => $_POST['grupa']
     ];
 
     $stmt->execute($data);
 
-    header("Location: read-anunturi.php");
+    header("Location: set-note.php");
 
 } catch (PDOException $e) {
     echo "Insert failed: " . $e->getMessage();
+    die();
 }
 
 }
