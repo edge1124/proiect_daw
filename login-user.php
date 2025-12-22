@@ -6,7 +6,7 @@
     try {
         $pdo = Database::getInstance()->getConnection();
         $iscaptchavalid = $_POST["g-recaptcha-response"];
-        $url = "https://www.google.com/recaptcha/api/siteverify?secret=6Lf8wTMsAAAAABZBIgL5KbXZSDC-gmV7HfzkveZe&response=" . $iscaptchavalid;
+        $url = "https://www.google.com/recaptcha/api/siteverify?secret=itssecretsorryfortheopsecfail&response=" . $iscaptchavalid;
         $result = file_get_contents($url);
         $result = json_decode($result);
         $result = json_decode(json_encode($result), true);
