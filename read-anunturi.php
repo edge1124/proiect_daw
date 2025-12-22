@@ -78,6 +78,7 @@ try {
             <thead class='table-dark'>
                 <tr>
                     <th>Titlu</th>
+                    <th>Materie</th>
                     <th>Continut</th>";
 
     if(auth::$user_type == 3) {
@@ -115,9 +116,16 @@ try {
 
         if($show_anunt){
             $titlu = $anunt['titlu'];
-            $content = $anunt['continut'];  
+            $content = $anunt['continut'];
+            $materie_stmt = $pdo->prepare("SELECT nume_materie FROM materie WHERE id_materie = :materie");
+            $materie_stmt->execute(["materie"  => $anunt['materie_id']]);
+            $materie = $materie_stmt->fetchColumn();
+            if($anunt['materie_id'] == 'admin'){
+                $materie = "Administrativ";
+            }
             echo "<tr>
                     <td>" . htmlspecialchars($titlu) . "</td>
+                    <td>" . htmlspecialchars($materie) . "</td>
                     <td>" . nl2br(htmlspecialchars($content)) . "</td>";
             
             if(auth::$user_type == 3) {
