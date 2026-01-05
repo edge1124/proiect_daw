@@ -8,7 +8,7 @@ if(auth::$user_type >= 3 ){
 
 if (isset($_POST['subject']) && isset($_POST['content']) && isset($_POST['email'])) {
     
-    $secret = "6LcrHjYsAAAAAPbb1FPTjLXThXwa3ngBSDlI1H7A";
+    $secret = "iar trebuie sa o schimb..";
     $verifyResponse = $_POST['g-recaptcha-response'];
         
     $ch = curl_init();
