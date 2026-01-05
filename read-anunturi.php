@@ -9,7 +9,8 @@ if(auth::$user_type == 0){
     header("Location: login-page.php");
     exit();
 }
-
+require_once 'IPlogger.php';
+logger::logVisit('read-anunturi.php');
 $pdo = Database::getInstance()->getConnection();
 
 if (isset($_POST['delete_id']) && auth::$user_type == 3) {
@@ -40,7 +41,7 @@ if (isset($_POST['delete_id']) && auth::$user_type == 3) {
               <a class="nav-link active" href="read-anunturi.php">Anunțuri</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="read-note.php"<?php if(auth::$user_type !=1 ):?> hidden <?php endif?>>Notele Mele</a>
+              <a class="nav-link" href="read-note.php"<?php if(auth::$user_type !=1):?> hidden <?php endif?>>Notele Mele</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="set-note.php" <?php if(auth::$user_type <2):?> hidden <?php endif?>>Setare Note</a>
@@ -51,13 +52,25 @@ if (isset($_POST['delete_id']) && auth::$user_type == 3) {
             <li class="nav-item">
               <a class="nav-link" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profesori-unibuc.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Profesori UniBuc</a>
+            </li>
           </ul>
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="logout.php">Log Out</a>
+          <li class="nav-item">
+              <a class="nav-link" href="contact.php"<?php if(auth::$user_type >=3):?> hidden <?php endif?>>Contact</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="reset-passwd.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Resetare Parole</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="site-analytics.php"<?php if(auth::$user_type <3):?> hidden <?php endif?> target="_blank" rel="noopener noreferrer">Site Analytics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="logout.php">Log Out</a>
             </li>
           </ul>
         </div>
@@ -79,7 +92,7 @@ try {
                 <tr>
                     <th>Titlu</th>
                     <th>Materie</th>
-                    <th>Continut</th>";
+                    <th>Conținut</th>";
 
     if(auth::$user_type == 3) {
         echo "<th></th>";
@@ -144,7 +157,7 @@ try {
 
 } 
 catch (PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
+    die("Eroare de conexiune: " . $e->getMessage());
 }
 ?>
     </div>

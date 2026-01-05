@@ -6,7 +6,8 @@ require_once 'auth.php';
 if(auth::$user_type<2){
     header("Location: login-page.php");
 }
-
+require_once 'IPlogger.php';
+logger::logVisit('set-note.php');
 $pdo = null;
 $materii = [];
 $studenti = [];
@@ -19,8 +20,7 @@ $nota_display = '';
 $materie_select_id = $_GET['materie'] ?? null;
 $student_select_id = $_GET['student'] ?? null;
 
-$nota_nou = $_POST['nota'] ?? null;
-$action_save = $_POST['action'] ?? null; 
+$nota_nou = $_POST['nota'] ?? null; 
 
 try {
     $pdo = Database::getInstance()->getConnection();
@@ -36,7 +36,7 @@ if (auth::$user_type == 3){
     $profesor = 'admin';
 }
 
-if($student_select_id && $materie_select_id && $nota_nou !== null && $action_save == 'save_grade'){
+if($student_select_id && $materie_select_id && $nota_nou !== null){
     try{
         $sql_check_nota = "SELECT val_nota FROM nota WHERE numar_matricol_student = :sid AND materie = :mid";
         $stmt_check_nota = $pdo->prepare($sql_check_nota);
@@ -66,7 +66,7 @@ if($student_select_id && $materie_select_id && $nota_nou !== null && $action_sav
         }
 
     } catch (PDOException $e){
-        die("Eroare de baza de date la salvarea notei: " . $e->getMessage());
+        die("Eroare de bază de date: " . $e->getMessage());
     }
 }
 
@@ -114,6 +114,7 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Note</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
@@ -141,26 +142,38 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
             <li class="nav-item">
               <a class="nav-link" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profesori-unibuc.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Profesori UniBuc</a>
+            </li>
           </ul>
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="logout.php">Log Out</a>
+          <li class="nav-item">
+              <a class="nav-link" href="contact.php"<?php if(auth::$user_type >=3):?> hidden <?php endif?>>Contact</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="reset-passwd.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Resetare Parole</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="site-analytics.php"<?php if(auth::$user_type <3):?> hidden <?php endif?> target="_blank" rel="noopener noreferrer">Site Analytics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="logout.php">Log Out</a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
     <div class="container mt-5">
-        <h2>Modificare si setare note</h2>
+        <h2>Modificare și setare note</h2>
         
         <form action="" method="GET"> 
             <div class="mb-3">
-                <label for="materie" class="form-label">1. Alegeti Materia:</label>
-                <select name="materie" id="materie" onchange="this.form.submit()" class="form-select" required>
-                    <option value="" disabled selected>-- Alegeti Materia--</option>
+                <label for="materie" class="form-label">1. Alegeți Materia:</label>
+                <select name="materie" id="materie" onchange="window.location.href='set-note.php?materie=' + this.value" class="form-select" required>
+                    <option value="" disabled selected>-- Alegeți Materia--</option>
                     <?php foreach ($materii as $materie): 
                         $id = htmlspecialchars($materie['id_materie']);
                         $nume = htmlspecialchars($materie['nume_materie']);
@@ -174,7 +187,7 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
             </div>
             <?php if ($materie_select_id): ?>
             <div class="mb-3">
-                <label for="student_id" class="form-label">2. Alegeti Studentul: </label>
+                <label for="student_id" class="form-label">2. Alegeți Studentul: </label>
                 <select name="student" id="student" onchange="this.form.submit()" class="form-select" required>
                     <option value="" disabled <?php echo (!$student_select_id) ? 'selected' : ''; ?>>-- Alegeti Student --</option>
                     <?php if (!empty($studenti)): 
@@ -188,7 +201,7 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
                             </option>
                     <?php endforeach; 
                     else: ?>
-                        <option value="" disabled>Niciun student la aceasta grupa la aceasta materie.</option>
+                        <option value="" disabled>Niciun student la grupa dumneavoastră la această materie</option>
                     <?php endif; ?>
                 </select>
             </div>
@@ -201,7 +214,7 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
             <?php if ($nota2 !== false): ?>
                 <p class="alert alert-info d-inline-block">Nota: <strong><?php echo $nota_display; ?></strong></p>
             <?php else: ?>
-                <p class="alert alert-warning d-inline-block">Studentul nu are nota la aceasta materie.</p>
+                <p class="alert alert-warning d-inline-block">Studentul nu are notă la această materie.</p>
             <?php endif; ?>
             
             <form action="" method="POST" class="mt-3">
@@ -215,7 +228,7 @@ $nota_display = ($nota2 !== false) ? htmlspecialchars($nota2) : '';
                 <input type="hidden" name="student" value="<?php echo htmlspecialchars($student_select_id); ?>">
                 <input type="hidden" name="csrf_token" value="<?php echo auth::$csrf_token; ?>">
                 
-                <button type="submit" name="action" value="save_grade" class="btn btn-success">Trimite nota</button>
+                <button type="submit" name="send" class="btn btn-success">Trimiteți notă</button>
             </form>
         <?php endif; ?>
     </div>

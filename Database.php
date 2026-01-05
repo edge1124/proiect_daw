@@ -1,4 +1,7 @@
 <?php
+
+//Cod luat de la laborator, modificat minim
+
 class Database {
     private static ?Database $instance = null; 
     private PDO $connection;

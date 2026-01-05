@@ -5,17 +5,27 @@
     
     try {
         $pdo = Database::getInstance()->getConnection();
-        $iscaptchavalid = $_POST["g-recaptcha-response"];
-        $url = "https://www.google.com/recaptcha/api/siteverify?secret=itssecretsorryfortheopsecfail&response=" . $iscaptchavalid;
-        $result = file_get_contents($url);
-        $result = json_decode($result);
-        $result = json_decode(json_encode($result), true);
-        if(!($result["success"]))
-        {
-            header("Location: login-page.php");
+        
+        $secret = "hiddenawayforever";
+        $verifyResponse = $_POST['g-recaptcha-response'];
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'secret'   => $secret,
+            'response' => $verifyResponse
+        ]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $response = curl_exec($ch);
+        $responseData = json_decode($response, true);
+        curl_close($ch);
+
+        if (!$responseData["success"]) {
+            header("Location: login-page.php?error=captcha");
             exit;
         }
-
         $sql = "SELECT * FROM user WHERE username = :username";
         
         $stmt = $pdo->prepare($sql);
@@ -33,12 +43,12 @@
                 exit;
             }
         } else {
-           header("Location: login-page.php");
+           header("Location: login-page.php?error=passwd");
             exit;
         }
     } catch (PDOException $e) {
         
-        header("Location: login-page.php");
+        header("Location: login-page.php?error=connection");
         exit;
     }
     }

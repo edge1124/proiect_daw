@@ -6,6 +6,8 @@ if(auth::$user_type != 1){
     header("Location: login-page.php");
     exit();
 }
+require_once 'IPlogger.php';
+logger::logVisit('read-note.php');
 ?>
 <html lang="en">
 <head>
@@ -38,13 +40,25 @@ if(auth::$user_type != 1){
             <li class="nav-item">
               <a class="nav-link" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profesori-unibuc.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Profesori UniBuc</a>
+            </li>
           </ul>
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="logout.php">Log Out</a>
+          <li class="nav-item">
+              <a class="nav-link" href="contact.php"<?php if(auth::$user_type >=3):?> hidden <?php endif?>>Contact</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare (Admin)</a>
+              <a class="nav-link" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="reset-passwd.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Resetare Parole</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="site-analytics.php"<?php if(auth::$user_type <3):?> hidden <?php endif?> target="_blank" rel="noopener noreferrer">Site Analytics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="logout.php">Log Out</a>
             </li>
           </ul>
         </div>
@@ -99,12 +113,13 @@ try {
         }
         echo "</tbody></table>"; 
     } else {
-        echo "<div class='alert alert-warning mt-4'>Nu au fost găsite informații pentru acest student.</div>";
+        echo "<div class='alert alert-warning mt-4'>Eroare de bază de date: studentul nu a fost găsit.</div>";
     }
 
 } 
 catch (PDOException $e) {
-    die("<div class='alert alert-danger'>Connection failed: " . $e->getMessage() . "</div>");
+    echo "<div class='alert alert-danger'>Eroare de conexiune: " . $e->getMessage() . "</div>";
+    die();
 }
 ?>
     </div>

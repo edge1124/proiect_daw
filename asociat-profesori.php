@@ -1,20 +1,22 @@
 <?php
 require_once 'auth.php';
 require_once 'Database.php';
-if(auth::$user_type <= 1){
+if(auth::$user_type <= 2){
     header("Location: login-page.php");
 }
+require_once 'IPlogger.php';
+logger::logVisit('asociat-profesori.php');
 $pdo = null;
 try {
     $pdo = Database::getInstance()->getConnection();
 } catch (PDOException $e){
-    die("Eroare de conexiune: " . $e->getMessage());
+    header("Location: asociat-profesori.php?status=pdoerror");
 }
 $sql_prof = "SELECT id_profesor, nume, prenume FROM profesor";
 $stmt_prof = $pdo->prepare($sql_prof);
 $stmt_prof->execute();
 $profesori = $stmt_prof->fetchAll(PDO::FETCH_ASSOC); 
-
+$status = $_GET['status'];
 ?>
 <!DOCTYPE html>
 
@@ -51,26 +53,53 @@ $profesori = $stmt_prof->fetchAll(PDO::FETCH_ASSOC);
             <li class="nav-item">
               <a class="nav-link active" href="asociat-profesori.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Asociere Profesori</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profesori-unibuc.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Profesori UniBuc</a>
+            </li>
           </ul>
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="logout.php">Log Out</a>
+          <li class="nav-item">
+              <a class="nav-link" href="contact.php"<?php if(auth::$user_type >=3):?> hidden <?php endif?>>Contact</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="create-user.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Înregistrare</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="reset-passwd.php"<?php if(auth::$user_type <3):?> hidden <?php endif?>>Resetare Parole</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="site-analytics.php"<?php if(auth::$user_type <3):?> hidden <?php endif?> target="_blank" rel="noopener noreferrer">Site Analytics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="logout.php">Log Out</a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
     <div class="container mt-5">
+        <?php
+                if ($status) {
+                    echo "<div class='message-box " . (strpos(htmlspecialchars($status), 'success') !== false ? 'alert alert-success' : 'alert alert-danger') . "'>";
+                    if ($status === "success") {
+                        echo "<h3> Asociere făcută cu succes.</h3>";
+                    } elseif ($status === "dberror") {
+                        echo "<h3> Eroare de bază de date. Este posibil ca asocierea să existe deja.</h3>";
+                    } elseif ($status === "pdoerror") {
+                        echo "<h3> Eroare de conexiune. Vă rugăm încercați mai târziu.</h3>";
+                    } else {
+                        echo "<h3> Eroare necunoscută. Vă rugăm încercați mai târziu.</h3>";
+                    }
+                    echo "</div>";
+                }
+        ?>
         <h1 class="mb-4">Asociat Porfesor-Materie</h1>
-        <form action="asociat-profesori.php" method="POST">
+        <form action="profassoc.php" method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo auth::$csrf_token; ?>">
             <div class="mb-3">
                 <label for="profesor" class="form-label">Profesor</label>
                 <select name="profesor" id="profesor" class="form-control" required>
-                    <option value="" disabled selected>-- Alegeti Profesor--</option>
+                    <option value="" disabled selected>-- Alegeți Profesor --</option>
                     <?php foreach ($profesori as $profesor): 
                         $id = htmlspecialchars($profesor['id_profesor']);
                         $nume = htmlspecialchars($profesor['nume']); 
@@ -85,7 +114,7 @@ $profesori = $stmt_prof->fetchAll(PDO::FETCH_ASSOC);
             <div class="mb-3">
                 <label for="materie" class="form-label">Materie:</label>
                 <select name="materie" id="materie" class="form-control" required>
-                    <option value="" disabled selected>-- Alegeti Materia--</option>
+                    <option value="" disabled selected>-- Alegeți Materia --</option>
                     <option value="M1">Materie 1</option>
                     <option value="M2">Materie 2</option>
                     <option value="M3">Materie 3</option>
@@ -100,55 +129,6 @@ $profesori = $stmt_prof->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 
-<?php
-
-if (isset($_POST['profesor']) || isset($_POST['grupa']) || isset($_POST['materie'])) {
-
-try {
-    $pdo = Database::getInstance()->getConnection();
-} catch (PDOException $e) {
-    die("Conexiune esuata: " . $e->getMessage());
-}
-
-try {
-    $sql = "INSERT INTO materie (id_profesor, id_materie, nume_materie, grupa) 
-            VALUES (:id_prof, :id_materie, :nume_materie, :grupa)";
-    
-    $stmt = $pdo->prepare($sql);
-    $nume_mat = "";
-    switch ($_POST['materie']) {
-    case 'M1':
-        $nume_mat = "Materie 1";
-        break;
-    case 'M2':
-        $nume_mat = "Materie 2";
-        break;
-    case 'M3':
-        $nume_mat = "Materie 3";
-        break;
-    case 'M4':
-        $nume_mat = "Materie 4";
-        break;
-    }   
-
-    $data = [
-        'id_prof' => $_POST['profesor'],
-        'id_materie' => $_POST['materie'],
-        'nume_materie' => $nume_mat,
-        'grupa' => $_POST['grupa']
-    ];
-
-    $stmt->execute($data);
-
-    header("Location: set-note.php");
-
-} catch (PDOException $e) {
-    echo "Insert failed: " . $e->getMessage();
-    die();
-}
-
-}
-?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
