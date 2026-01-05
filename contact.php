@@ -101,7 +101,7 @@ $subj = $_GET['subj'];
                 }
             ?>
         <h1 class="mb-4">Contact Administrație Website</h1>
-        <form action="contact.php" method="POST">
+        <form action="sendmail.php" method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo auth::$csrf_token; ?>">
             <div class="mb-3">
                 <label for="title" class="form-label">Subiect</label>
@@ -120,76 +120,6 @@ $subj = $_GET['subj'];
         </form>
     </div>
 
-<?php
-    
-
-if (isset($_POST['subject']) && isset($_POST['content']) && isset($_POST['email'])) {
-    
-    $secret = "notmakingthesamemistaketwice";
-    $verifyResponse = $_POST['g-recaptcha-response'];
-        
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-        'secret'   => $secret,
-        'response' => $verifyResponse
-    ]));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-       
-    $response = curl_exec($ch);
-    $responseData = json_decode($response, true);
-    curl_close($ch);
-
-    if (!$responseData["success"]) {
-        header("Location: login-page.php?error=captcha");
-        exit;
-    }
-    
-    require_once 'class.phpmailer.php';
-    require_once 'mail_config.php' ;
-
-    $mailtext = htmlspecialchars($_POST['content']) . "<br />\n<br />\n" . "Trimis de " . htmlspecialchars($_POST['email']);
-    $mailtext = wordwrap($mailtext, 160, "<br />\n");
-    $status = "";
-
-    $mail = new PHPMailer(true); 
-
-    $mail->IsSMTP();
-
-    try {
-    
-        $mail->SMTPDebug  = 0;                     
-        $mail->SMTPAuth   = true; 
-
-        $to="stefansindelaru@gmail.com";
-
-        $mail->SMTPSecure = "ssl";                 
-        $mail->Host       = "csindelaru.daw.ssmr.ro";      
-        $mail->Port       = 465;                   
-        $mail->Username   = $usernamecontact;
-        $mail->Password   = $passwordcontact;
-        $mail->AddReplyTo(htmlspecialchars($_POST['email']));
-        $mail->AddAddress($to);
-        
-        $mail->SetFrom('contact@csindelaru.daw.ssmr.ro', 'Platforma Contact');
-        $mail->Subject = htmlspecialchars($_POST['subject']);
-        $mail->AltBody = 'To view this post you need a compatible HTML viewer!'; 
-        $mail->MsgHTML($mailtext);
-        $mail->Send();
-        $status = "success";
-    } catch (phpmailerException $e) {
-        echo $e->errorMessage();
-        $status = "mailerror";
-    } catch (Exception $e) {
-        echo $e->getMessage();
-        $status = "othererror";
-    }
-
-    header("Location: contact.php?status=" . urlencode($status));
-    exit; 
-}
-?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>

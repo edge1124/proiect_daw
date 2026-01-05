@@ -88,7 +88,7 @@ $materii = $materii_getall->fetchAll(PDO::FETCH_ASSOC);
     </nav>
     <div class="container mt-5">
         <h1 class="mb-4">Creează Anunț</h1>
-        <form action="create-anunt.php" method="POST">
+        <form action="post-anunt.php" method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo auth::$csrf_token; ?>">
             <div class="mb-3">
                 <label for="title" class="form-label">Titlu</label>
@@ -121,42 +121,7 @@ $materii = $materii_getall->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 
-<?php
 
-if (isset($_POST['title']) || isset($_POST['content']) || isset($_POST['materie'])) {
-
-try {
-    $pdo = Database::getInstance()->getConnection();
-} catch (PDOException $e) {
-    echo "Eroare de conexiune: " . $e->getMessage();
-    die();
-}
-
-try {
-    $sql = "INSERT INTO anunturi (titlu, continut, profesor_id, materie_id, time_added) 
-            VALUES (:title, :continut, :profesor_id, :materie_id, :time)";
-    
-    $stmt = $pdo->prepare($sql);
-
-    $data = [
-        'title' => $_POST['title'] ?? 'Sample Title',
-        'continut' => $_POST['content'] ?? 'Sample Description',
-        'profesor_id' => $profesor,
-        'materie_id' => $_POST['materie'],
-        'time' => time()
-    ];
-
-    $stmt->execute($data);
-
-    header("Location: read-anunturi.php");
-
-} catch (PDOException $e) {
-    echo "Eroare de bază de date: " . $e->getMessage();
-    die();
-}
-
-}
-?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
